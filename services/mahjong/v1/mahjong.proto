@@ -1,0 +1,246 @@
+syntax = "proto3";
+
+option go_package = "services.mahjong.v1";
+
+package mahjong;
+
+service Mahjong {
+  rpc Ping (Empty) returns (Empty) {}
+
+  rpc Login (LoginRequest) returns (LoginReply) {}
+
+  rpc Logout (Empty) returns (LogoutReply) {}
+
+  rpc CreateRoom (CreateRoomRequest) returns (CreateRoomReply) {}
+
+  rpc JoinRoom (JoinRoomRequest) returns (JoinRoomReply) {}
+
+  rpc RefreshRoom (RefreshRoomRequest) returns (RefreshRoomReply) {}
+
+  rpc Ready (stream ReadyRequest) returns (stream ReadyReply) {}
+
+  rpc Start (stream StartRequest) returns (stream StartReply) {}
+}
+
+message Empty {}
+
+message LoginRequest {
+  string playerName = 1;
+}
+
+message LoginReply {
+  string message = 1;
+  string token = 2;
+  optional ReconnectInfo reconnectInfo = 3;
+}
+
+message LogoutReply {
+  string message = 1;
+}
+
+message ReconnectInfo {
+  string roomID = 1;
+  GameInfo gameInfo = 2;
+  repeated int32 handTiles = 3;
+  repeated  PlayerInfo playerInfos = 4;
+}
+
+message PlayerInfo{
+  string playerName = 1;
+  Wind playerWind = 2;
+  int32 playerPoints = 3;
+  repeated int32 boardTiles = 4;
+  repeated Action actions = 5;
+  bool isRiichi = 6;
+}
+
+message Room{
+  string roomID = 1;
+  string roomName = 2;
+  int32 playerCount = 3;
+  string ownerName = 4;
+}
+
+message CreateRoomRequest {
+  string roomName = 1;
+}
+
+message CreateRoomReply {
+  string message = 1;
+  Room room = 2;
+}
+
+message JoinRoomRequest {
+  string roomID = 1;
+}
+
+message JoinRoomReply {
+  string message = 1;
+  Room room = 2;
+  int32 seat = 3;
+}
+
+message RefreshRoomRequest {
+  optional string roomName = 1;
+}
+
+message RefreshRoomReply {
+  string message = 1;
+  repeated Room rooms = 2;
+}
+
+
+message ReadyRequest {
+  oneof request {
+    Empty getReady = 2;
+    Empty cancelReady = 3;
+    AddRobotRequest addRobot = 4;
+    RemovePlayerRequest removePlayer = 5;
+    LeaveRoomRequest leaveRoom = 6;
+    Empty startGame = 7;
+    ChatRequest chat = 8;
+  }
+}
+
+message ReadyReply {
+  string message  = 1;
+  oneof reply {
+    PlayerJoinReply playerJoin = 2;
+    GetReadyReply getReady = 3;
+    CancelReadyReply cancelReady = 4;
+    AddRobotReply addRobot = 5;
+    PlayerLeaveReply playerLeave = 6;
+    Empty startGame = 7;
+    ChatReply chat = 8;
+  }
+}
+
+message StartRequest {
+  oneof request {
+    string ping = 1;
+    Action action = 2;
+    string next = 3;
+    ChatRequest chat = 4;
+  }
+}
+
+message StartReply {
+  string message = 1;
+  oneof reply {
+    string pong = 2;
+    DrawMsg draw = 3;
+    DiscardMsg discard = 5;
+    CallMsg call = 6;
+    string gameStart = 7;
+    GameInfo gameInitInfo = 8;
+    ChatReply chat = 9;
+  }
+  repeated Action validActions = 4;
+}
+
+message LeaveRoomRequest {
+  string roomID = 1;
+}
+
+message AddRobotRequest {
+  int32 robotSeat = 1;
+  string robotLevel = 2;
+}
+
+message RemovePlayerRequest {
+  int32 playerSeat = 1;
+}
+
+
+enum ActionType{
+    Skip = 0;
+    Discard = 1;
+    Chi = 2;
+    Pon = 3;
+    DaiMinKan = 4;
+    ShouMinKan = 5;
+    AnKan = 6;
+    Riichi = 7;
+    Ron = 8;
+    Tsumo = 9;
+    KyuShuKyuHai = 10;
+    ChanKan = 11;
+}
+
+message Action {
+  ActionType type = 1;
+  repeated int32 tiles = 2;
+  repeated Wind fromWho = 3;
+}
+
+
+enum Wind {
+  East = 0; // 东
+  South = 1; // 南
+  West = 2; // 西
+  North = 3; // 北
+}
+
+message GameInfo {
+  Wind wind = 1;
+  repeated int32 dora = 2;
+  repeated int32 tiles = 3;
+  int32 windRound = 4;  // 东一、二、三、四；南一、二、三、四...
+  int32 roundNumber = 5;
+  int32 riichiNum = 6; // 立直棒个数
+  int32 honbaNum = 7;  // 本场数
+}
+
+message DrawMsg {
+  Wind who = 1;
+  optional int32 tile = 2;
+}
+
+message DiscardMsg {
+  Wind who = 1;
+  int32 tile = 2;
+  bool  tsumoGiri = 3;
+}
+
+message CallMsg {
+  ActionType type = 1;
+  Wind who = 2;
+  optional Wind fromWho = 3;
+  repeated int32 tilesOnHand = 4;
+  optional int32 tileCalled = 5;
+}
+
+message GetReadyReply{
+  int32 seat = 1;
+  string playerName = 2;
+}
+
+message CancelReadyReply{
+  int32 seat = 1;
+  string playerName = 2;
+}
+
+message AddRobotReply{
+  int32 robotSeat = 1;
+  string robotLevel = 2;
+}
+
+message PlayerJoinReply{
+  int32 seat = 1;
+  string playerName = 2;
+}
+
+message PlayerLeaveReply{
+  int32 seat = 1;
+  int32 ownerSeat = 2;
+  string playerName = 3;
+}
+
+message ChatRequest {
+  string message = 1;
+}
+
+message ChatReply {
+  string message = 1;
+  string playerName = 2;
+}
