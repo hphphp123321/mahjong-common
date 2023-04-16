@@ -1,4 +1,4 @@
-module github.com/hphphp123312/mahjong-common
+module github.com/hphphp123321/mahjong-common
 
 go 1.19
 
