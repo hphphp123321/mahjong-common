@@ -87,6 +87,16 @@ func (r *Room) GetPlayerBySeat(seat int) (*player.Player, error) {
 	return nil, errors.New("player in seat not found")
 }
 
+func (r *Room) GetPlayerNames() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var names []string
+	for _, v := range r.Players {
+		names = append(names, v.PlayerName)
+	}
+	return names
+}
+
 func (r *Room) IsFull() bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
