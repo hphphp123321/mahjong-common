@@ -3,7 +3,7 @@ package room
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/hphphp123321/mahjong-common/common"
+	"github.com/hphphp123321/go-common"
 	"github.com/hphphp123321/mahjong-common/player"
 	"sync"
 )
@@ -26,15 +26,15 @@ func (r *Room) AddRobot(p *player.Player) error {
 	if r.PlayerCount == 4 {
 		return errors.New("room is full")
 	}
-	if !common.Contain(p.Seat, r.IdleSeats) {
+	if !common.SliceContain(r.IdleSeats, p.Seat) {
 		return errors.New("seat already used")
 	}
 	r.Players = append(r.Players, p)
-	idleSeats, err := common.Remove(p.Seat, r.IdleSeats)
+	idleSeats, err := common.Remove(r.IdleSeats, p.Seat)
 	if err != nil {
 		return err
 	}
-	r.IdleSeats = idleSeats.([]int)
+	r.IdleSeats = idleSeats
 	r.PlayerCount++
 	return nil
 }
